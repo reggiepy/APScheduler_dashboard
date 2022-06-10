@@ -77,6 +77,8 @@ def get_application() -> FastAPI:
     )
     application.mount("/static", StaticFiles(directory=settings.STATIC_RESOURCE_PATH, html=True), name="static")
     application.mount("/swagger", StaticFiles(directory=settings.SWAGGER_RESOURCE_PATH, html=True), name="swagger")
+    # for route in application.routes:
+    #     print(route.path)
     return application
 
 
@@ -85,7 +87,7 @@ app = get_application()
 
 @app.middleware("http")
 async def add_process_time_header(request: Request, call_next):
-    request_id = str(uuid4())
+    request_id = uuid4().hex
     request.state.request_id = request_id
     start_time = time.time()
     response = await call_next(request)

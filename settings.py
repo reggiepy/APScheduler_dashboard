@@ -36,6 +36,7 @@ PROJECT_DEBUG = config("DEBUG", default=False)
 PROJECT_DOCS_URL = "/docs"
 PROJECT_REDOC_URL = "/redoc"
 PROJECT_URL_PREFIX = "/api/v1"
+PROJECT_URL_TOKEN = "/api/v1/auth/access_token"
 # CORS
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default=["*"])
 # web静态文件路径
