@@ -1,6 +1,8 @@
 # *_*coding:utf-8 *_*
 # @Author : Reggie
-# @Time : 2022/6/10 下午 6:51 
+# @Time : 2022/6/10 下午 6:51
+from typing import Union
+
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 
@@ -43,7 +45,7 @@ class ScheduleCli(object):
 
 
 # 创建schedule对象
-schedule: AsyncIOScheduler = ScheduleCli()
+schedule: Union[AsyncIOScheduler, ScheduleCli] = ScheduleCli()
 
 # 只允许导出 redis_client 实例化对象
 __all__ = ["schedule"]

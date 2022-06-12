@@ -2,10 +2,11 @@
 # @Author : Reggie
 # @Time : 2022/6/8 下午 5:13 
 import time
+from typing import Union
 from uuid import uuid4
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Cookie
 from fastapi.exceptions import RequestValidationError, HTTPException
 from fastapi.openapi.docs import get_swagger_ui_oauth2_redirect_html, get_swagger_ui_html, get_redoc_html
 from pip._vendor.requests import RequestException
@@ -13,6 +14,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 from starlette.requests import Request
+from starlette.responses import FileResponse, RedirectResponse
 from starlette.staticfiles import StaticFiles
 
 import events
@@ -22,6 +24,7 @@ from api.exception_handlers.http_error import http_error_handler, http_400_error
 from api.exception_handlers.validation_error import http_422_error_handler
 from api.middlewares.audit import AuditMiddleware
 from api.middlewares.common import add_process_time_header
+from core import security
 from log import log_init
 
 
@@ -59,6 +62,7 @@ def get_application() -> FastAPI:
             redoc_favicon_url="swagger/favicon.png",
             with_google_fonts=False
         )
+
     application.include_router(api_router, prefix=settings.PROJECT_URL_PREFIX)
     application.add_event_handler("startup", events.create_start_app_handler(application))
     application.add_event_handler("shutdown", events.create_stop_app_handler(application))
@@ -83,6 +87,22 @@ def get_application() -> FastAPI:
 
 
 app = get_application()
+
+
+@app.get("/", include_in_schema=False)
+def index(access_token: Union[str, None] = Cookie(default=None)):
+    login_response = RedirectResponse("/login")
+    if not access_token:
+        return login_response
+    payload = security.decode_access_token(access_token)
+    if not payload:
+        return login_response
+    return FileResponse(f"{settings.STATIC_RESOURCE_PATH}/index.html", status_code=200, method="GET")
+
+
+@app.get("/login", include_in_schema=False)
+def index():
+    return FileResponse(f"{settings.STATIC_RESOURCE_PATH}/login.html", status_code=200, method="GET")
 
 
 @app.middleware("http")

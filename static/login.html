@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>登录</title>
+    <script src="/static/js/jquery-1.8.2.min.js"></script>
+    <script src="/static/js/jquery.cookie.js"></script>
+
+    <!-- Bootstrap core CSS -->
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        .bd-placeholder-img {
+            font -size: 1.125rem;
+            text-anchor: middle;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+        }
+
+        @media (min-width: 768px) {
+            .bd-placeholder-img-lg {
+                font-size: 3.5rem;
+            }
+        }
+    </style>
+
+    <!-- Custom styles for this template -->
+    <link href="/static/css/signin.css" rel="stylesheet">
+</head>
+<body class="text-center">
+<main class="form-signin">
+    <form>
+        <img class="mb-4" src="/static/logo.svg" alt="" width="72" height="57">
+        <h1 class="h3 mb-3 fw-normal">请先登录</h1>
+
+        <div class="form-floating">
+            <input type="text" class="form-control" id="username" placeholder="name@example.com">
+            <label for="username">用户名</label>
+        </div>
+        <div class="form-floating">
+            <input type="password" class="form-control" id="password" placeholder="Password">
+            <label for="password">密码</label>
+        </div>
+
+        <div class="checkbox mb-3">
+            <label>
+                <input type="checkbox" value="remember-me"> 记住我
+            </label>
+        </div>
+        <button class="w-100 btn btn-lg btn-primary" type="submit">登录</button>
+        <p class="mt-5 mb-3 text-muted">&copy; 2022–2022</p>
+    </form>
+    <script>
+        $("button").click(function () {
+            let username = $("#username").val()
+            let password = $("#password").val()
+            let data = {
+                "username": username,
+                "password": password
+            }
+            // $.ajax({
+            //         type: "POST",
+            //         url: "/api/v1/login",
+            //         dataType: "json",
+            //         contentType: "application/json",
+            //         data: JSON.stringify(data),
+            //         success: function (data, status) {
+            //             alert(data)
+            //             alert(status)
+            //         }
+            //     }
+            // )
+            $.post("/api/v1/auth/access_token", data, function (d, status) {
+                if (status === "success") {
+                    $.cookie("access_token", d.access_token, {expires: 1, path: '/'})
+                    $.cookie("token_type", d.token_type, {expires: 1, path: '/'})
+                    window.location.replace("/")
+                } else {
+                    alert("STATUS_FAILED")
+                }
+            }, "json")
+        })
+    </script>
+</main>
+
+</body>
+</html>
