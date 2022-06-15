@@ -27,7 +27,7 @@ class ScheduleCli(object):
         job_stores = {
             'default': SQLAlchemyJobStore(url='sqlite:///jobs.sqlite')
         }
-        self._schedule = AsyncIOScheduler(jobstores=job_stores)
+        self._schedule = AsyncIOScheduler(jobstores=job_stores, timezone="Asia/Shanghai")
         self._schedule.start()
 
     # 使实例化后的对象 赋予apscheduler对象的方法和属性

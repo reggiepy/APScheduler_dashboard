@@ -19,7 +19,7 @@ from starlette.staticfiles import StaticFiles
 
 import events
 import settings
-from api import api_router
+from api.v1.api import api_router
 from api.exception_handlers.http_error import http_error_handler, http_400_error_handler
 from api.exception_handlers.validation_error import http_422_error_handler
 from api.middlewares.audit import AuditMiddleware
@@ -106,7 +106,7 @@ def index():
 
 
 @app.middleware("http")
-async def add_process_time_header(request: Request, call_next):
+async def add_process_time_header2(request: Request, call_next):
     request_id = uuid4().hex
     request.state.request_id = request_id
     start_time = time.time()
@@ -121,9 +121,10 @@ async def add_process_time_header(request: Request, call_next):
 
 if __name__ == '__main__':
     # Load the configuration
+    from pathlib import Path
     log_init(log_to_stderr="1")
     uvicorn.run(
-        app="dash:app",
+        app=f"{Path(__file__).stem}:app",
         host=settings.SERVER_HOST,
         port=settings.SERVER_PORT,
         ssl_keyfile=settings.SSL_KEYFILE,
