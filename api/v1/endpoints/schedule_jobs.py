@@ -6,10 +6,9 @@ from typing import Any, Union
 import time
 
 from apscheduler.util import get_callable_name, convert_to_datetime
-from fastapi import APIRouter, Depends, Path, Query
+from fastapi import APIRouter, Depends, Path, Query, Body
 from fastapi.security import OAuth2PasswordRequestForm
 
-import settings
 from api.dependencies.auth import get_current_user
 from core import security
 from core.sys_schedule import schedule
@@ -92,9 +91,12 @@ async def get_job(
     job = schedule.get_job(job_id=job_id, jobstore=jobstore)
     return Helper.parse_job(job)
 
+
 def func():
     time.sleep(1)
     print(datetime.now().strftime("%Y.%m.%d %H:%M:%S' '%m/%d/%Y"))
+
+
 @api.post(
     path="/add_job",
     response_model=Any,
@@ -104,10 +106,8 @@ def func():
 async def add_job(
         # user: Any = Depends(get_current_user),
 ):
-
-    print(id(schedule._schedule))
-    print(schedule.state)
     job = schedule.add_job(func=func, trigger="cron", second=3)
+    # print(job.__getstate__())
     return Helper.parse_job(job)
 
 
@@ -167,23 +167,42 @@ async def update_job(
         # user: Any = Depends(get_current_user),
         jobstore: Union[None, str] = Query(None, description="任务存储"),
         job_id: str = Path(..., description="任务id"),
+        changes: dict = Body(..., description="改动"),
 ):
-    pass
+    job = schedule.modify_job(job_id=job_id, jobstore=jobstore, **changes)
+    return Helper.parse_job(job)
 
 
 @api.delete(
-    path="/delete_job/{job_id}",
+    path="/remove_job/{job_id}",
     response_model=Any,
     name="删除job",
     summary="APSchedule - 删除job",
-    operation_id="schedule::delete_job")
-async def delete_job(
+    operation_id="schedule::remove_job")
+async def remove_job(
         # user: Any = Depends(get_current_user),
         jobstore: Union[None, str] = Query(None, description="任务存储"),
         job_id: str = Path(..., description="任务id"),
 ):
     try:
         schedule.remove_job(job_id=job_id, jobstore=jobstore)
+    except Exception as e:
+        return False
+    return True
+
+
+@api.delete(
+    path="/remove_all_jobs",
+    response_model=Any,
+    name="删除所有job",
+    summary="APSchedule - 删除所有job",
+    operation_id="schedule::remove_all_jobs")
+async def remove_all_jobs(
+        # user: Any = Depends(get_current_user),
+        jobstore: Union[None, str] = Query(None, description="任务存储"),
+):
+    try:
+        schedule.remove_all_jobs(jobstore=jobstore)
     except Exception as e:
         return False
     return True

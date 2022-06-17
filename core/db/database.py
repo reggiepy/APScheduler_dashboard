@@ -1,42 +1,23 @@
 # *_*coding:utf-8 *_*
 # @Author : Reggie
 # @Time : 2022/6/14 下午 2:00 
-from typing import List, Union
+from typing import Union
 
-import sqlalchemy
-from fastapi import FastAPI
-from pydantic import BaseModel
 import databases
+import sqlalchemy
+from sqlalchemy.ext.asyncio import create_async_engine
 
-# SQLAlchemy specific code, as with any other app
-DATABASE_URL = "sqlite:///./test.db"
-# DATABASE_URL = "postgresql://user:password@postgresserver/db"
+from settings import DATABASE_URL
 
+database = databases.Database(DATABASE_URL)
 
 metadata = sqlalchemy.MetaData()
 
-
-class Database:
-    _instance = None
-
-    def __new__(cls, *args, **kwargs):
-        if not cls._instance:
-            cls._instance = super(Database, cls).__new__(cls, *args, **kwargs)
-        return cls._instance
-
-    def __init__(self):
-        self._database = None
-
-    def init_database(self, database_url) -> None:
-        self._database = databases.Database(database_url)
-
-    # 使实例化后的对象 赋予 databases.Database 对象的方法和属性
-    def __getattr__(self, item):
-        return getattr(self._database, item)
-
-
-# 创建 database 对象
-database: Union[databases.Database, Database] = Database()
+engine = sqlalchemy.create_engine(
+    DATABASE_URL,
+    connect_args={"check_same_thread": False},
+    echo=True
+)
 
 # 只允许导出 database 实例化对象
-__all__ = ["database"]
+__all__ = ["database", "metadata", "engine"]

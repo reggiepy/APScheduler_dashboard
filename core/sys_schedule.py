@@ -5,6 +5,20 @@ from typing import Union
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
+import logging
+
+logger = logging.getLogger("apscheduler.scheduler")
+
+
+# SQLAlchemyJobStore 显示执行的 sql
+def _show_sql(func):
+    def inner(*args, **kwargs):
+        sql = str(args[0]).replace('\n', '')
+        logger.info(f"SQLAlchemyJobStore SQL: {sql}")
+        out = func(*args, **kwargs)
+        return out
+
+    return inner
 
 
 class ScheduleCli(object):
@@ -19,7 +33,7 @@ class ScheduleCli(object):
         # 对象 在 @app.on_event("startup") 中初始化
         self._schedule = None
 
-    def init_scheduler(self) -> None:
+    def init_scheduler(self, show_sql=True) -> None:
         """
         初始化 apscheduler
         :return:
@@ -28,6 +42,12 @@ class ScheduleCli(object):
             'default': SQLAlchemyJobStore(url='sqlite:///jobs.sqlite')
         }
         self._schedule = AsyncIOScheduler(jobstores=job_stores, timezone="Asia/Shanghai")
+
+        # SQLAlchemyJobStore 支持显示执行的 sql
+        if show_sql:
+            for alia, job_store in self._schedule._jobstores.items():
+                if isinstance(job_store, SQLAlchemyJobStore):
+                    job_store.engine.execute = _show_sql(job_store.engine.execute)
         self._schedule.start()
 
     # 使实例化后的对象 赋予apscheduler对象的方法和属性

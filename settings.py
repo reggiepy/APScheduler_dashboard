@@ -46,6 +46,8 @@ SWAGGER_RESOURCE_PATH = os.path.join(ROOT_PATH, "swagger")
 SSL_KEYFILE = os.path.join(ROOT_PATH, "conf/ca/caprivate.key")
 SSL_CERTFILE = os.path.join(ROOT_PATH, "conf/ca/cacert.crt")
 
+DATABASE_URL = f"sqlite:///{ROOT_PATH}/test.db"
+
 #####################################################################################
 #                                    平台配置 　　                                    ＃
 #####################################################################################
